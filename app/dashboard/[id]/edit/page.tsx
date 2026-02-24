@@ -54,6 +54,7 @@ function DashboardEditContent({ id }: { id: string }) {
   };
 
   const handleEditWidget = (widget: WidgetConfig) => {
+    console.log('[DashboardEditPage] handleEditWidget called for widget:', widget.id);
     setEditingWidget(widget);
     setIsConfigOpen(true);
   };
@@ -89,6 +90,7 @@ function DashboardEditContent({ id }: { id: string }) {
   };
 
   const handleDeleteWidget = (widgetId: string) => {
+    console.log('[DashboardEditPage] handleDeleteWidget called for widget:', widgetId);
     const newWidgets = widgets.filter((w) => w.id !== widgetId);
     const newLayout = layout.filter((l) => l.i !== widgetId);
     setWidgets(newWidgets);

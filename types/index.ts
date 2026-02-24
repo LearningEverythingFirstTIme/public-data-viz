@@ -15,7 +15,23 @@ export interface DataSet {
   };
 }
 
-export type ChartType = 'line' | 'bar' | 'area' | 'scatter' | 'pie' | 'stat';
+export type ChartType = 'line' | 'bar' | 'area' | 'scatter' | 'pie' | 'stat' | 'candlestick';
+
+// OHLCV Data Point for candlestick charts
+export interface OHLCVDataPoint {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+// Extended DataSet that includes OHLCV data
+export interface OHLCVDataSet extends Omit<DataSet, 'data'> {
+  data: OHLCVDataPoint[];
+  isOHLCV: true;
+}
 
 export interface WidgetConfig {
   id: string;

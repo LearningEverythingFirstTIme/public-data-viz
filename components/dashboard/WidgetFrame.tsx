@@ -12,8 +12,18 @@ import {
   ScatterChartComponent,
   PieChartComponent,
   StatCardComponent,
+  CandlestickChartComponent,
 } from '@/components/charts';
 import { colorThemes, ColorThemeKey } from '@/lib/data/connectors';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface WidgetFrameProps {
   widget: WidgetConfig;
@@ -31,6 +41,7 @@ export function WidgetFrame({
   const [data, setData] = useState<DataSet | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -113,6 +124,15 @@ export function WidgetFrame({
         );
       case 'stat':
         return <StatCardComponent data={data} colorTheme={colorTheme} />;
+      case 'candlestick':
+        return (
+          <CandlestickChartComponent
+            data={data}
+            colorTheme={colorTheme}
+            showGrid={widget.chartConfig.showGrid}
+            height={220}
+          />
+        );
       default:
         return null;
     }
@@ -134,13 +154,19 @@ export function WidgetFrame({
         {isEditing && (
           <div className="flex items-center gap-1">
             <button
-              onClick={onEdit}
+              onClick={() => {
+                console.log('[WidgetFrame] Settings clicked for widget:', widget.id);
+                onEdit?.();
+              }}
               className="p-1.5 text-gray-400 hover:text-[#00D4AA] hover:bg-[#00D4AA]/10 rounded-lg transition-colors"
             >
               <Settings className="w-4 h-4" />
             </button>
             <button
-              onClick={onDelete}
+              onClick={() => {
+                console.log('[WidgetFrame] Delete clicked for widget:', widget.id);
+                setShowDeleteDialog(true);
+              }}
               className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
             >
               <Trash2 className="w-4 h-4" />
@@ -163,6 +189,37 @@ export function WidgetFrame({
           renderChart()
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="bg-[#13161E] border-[#1E2330]">
+          <DialogHeader>
+            <DialogTitle className="text-white">Delete Widget</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Are you sure you want to delete this widget? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              className="border-[#1E2330] text-gray-300 hover:bg-[#1E2330]"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                console.log('[WidgetFrame] Confirmed delete for widget:', widget.id);
+                onDelete?.();
+                setShowDeleteDialog(false);
+              }}
+              className="bg-red-500 text-white hover:bg-red-600"
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

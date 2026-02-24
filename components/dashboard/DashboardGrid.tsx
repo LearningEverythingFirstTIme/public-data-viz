@@ -77,8 +77,14 @@ export function DashboardGrid({
           <WidgetFrame
             widget={widget}
             isEditing={isEditing}
-            onEdit={() => onEditWidget?.(widget)}
-            onDelete={() => onDeleteWidget?.(widget.id)}
+            onEdit={() => {
+              console.log('[DashboardGrid] onEdit called for widget:', widget.id);
+              onEditWidget?.(widget);
+            }}
+            onDelete={() => {
+              console.log('[DashboardGrid] onDelete called for widget:', widget.id);
+              onDeleteWidget?.(widget.id);
+            }}
           />
         </div>
       ))}

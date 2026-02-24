@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, ChevronRight, BarChart3, LineChart, PieChart, Activity, Hash } from 'lucide-react';
+import { X, ChevronRight, BarChart3, LineChart, PieChart, Activity, Hash, CandlestickChart } from 'lucide-react';
 import { WidgetConfig, ChartType, DataSourceIndicator } from '@/types';
 import { getAllConnectors } from '@/lib/data';
 import { colorThemes, ColorThemeKey } from '@/lib/data/connectors';
@@ -33,6 +33,7 @@ const chartTypes: { type: ChartType; label: string; icon: React.ReactNode }[] = 
   { type: 'scatter', label: 'Scatter', icon: <Hash className="w-4 h-4" /> },
   { type: 'pie', label: 'Pie', icon: <PieChart className="w-4 h-4" /> },
   { type: 'stat', label: 'Stat Card', icon: <Hash className="w-4 h-4" /> },
+  { type: 'candlestick', label: 'Candlestick', icon: <CandlestickChart className="w-4 h-4" /> },
 ];
 
 export function WidgetConfigPanel({
@@ -41,6 +42,8 @@ export function WidgetConfigPanel({
   onClose,
   onSave,
 }: WidgetConfigPanelProps) {
+  console.log('[WidgetConfigPanel] Render - isOpen:', isOpen, 'widget:', widget?.id || 'null');
+  
   const connectors = getAllConnectors();
   const [step, setStep] = useState(1);
   
