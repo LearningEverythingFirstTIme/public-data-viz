@@ -1,6 +1,7 @@
 import { WorldBankConnector } from './worldbank';
 import { FREDConnector } from './fred';
 import { CoinGeckoConnector } from './coingecko';
+import { AlphaVantageConnector } from './alphavantage';
 import { DataConnector, colorThemes, ColorThemeKey } from './connectors';
 
 export { colorThemes };
@@ -10,6 +11,7 @@ export const dataConnectors: DataConnector[] = [
   new WorldBankConnector(),
   new FREDConnector(),
   new CoinGeckoConnector(),
+  new AlphaVantageConnector(),
 ];
 
 export function getConnector(id: string): DataConnector | undefined {
