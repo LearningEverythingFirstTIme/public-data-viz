@@ -154,20 +154,26 @@ export function WidgetFrame({
         {isEditing && (
           <div className="flex items-center gap-1">
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 console.log('[WidgetFrame] Settings clicked for widget:', widget.id);
                 onEdit?.();
               }}
-              className="p-1.5 text-gray-400 hover:text-[#00D4AA] hover:bg-[#00D4AA]/10 rounded-lg transition-colors"
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="p-1.5 text-gray-400 hover:text-[#00D4AA] hover:bg-[#00D4AA]/10 rounded-lg transition-colors pointer-events-auto"
             >
               <Settings className="w-4 h-4" />
             </button>
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 console.log('[WidgetFrame] Delete clicked for widget:', widget.id);
                 setShowDeleteDialog(true);
               }}
-              className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors pointer-events-auto"
             >
               <Trash2 className="w-4 h-4" />
             </button>

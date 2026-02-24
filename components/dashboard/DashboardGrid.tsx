@@ -69,6 +69,7 @@ export function DashboardGrid({
       rowHeight={30}
       isDraggable={isEditing}
       isResizable={isEditing}
+      draggableHandle=".cursor-move"
       onLayoutChange={handleLayoutChange}
       margin={[16, 16]}
     >
