@@ -1,13 +1,13 @@
-# DataLens - Data Visualization Dashboard
+# DataLens - Public Data Visualization Dashboard
 
-A user-customizable public data visualization dashboard built with Next.js 14, TypeScript, Tailwind CSS, and Firebase.
+A user-customizable public data visualization dashboard built with Next.js 14, TypeScript, Tailwind CSS, and Vercel.
 
 ## Features
 
 ### Authentication
-- Firebase Authentication with Google Sign-In
+- Clerk Authentication with Google Sign-In
 - Email/Password authentication
-- Protected routes
+- Protected routes with middleware
 
 ### Dashboard System
 - List view of user's dashboards
@@ -44,24 +44,27 @@ A user-customizable public data visualization dashboard built with Next.js 14, T
 - **Styling:** Tailwind CSS + shadcn/ui
 - **Charts:** Recharts
 - **Grid:** react-grid-layout
-- **Auth & Database:** Firebase Auth + Firestore
-- **Deployment:** Vercel-ready
+- **Auth:** Clerk
+- **Database:** Vercel Postgres (Neon)
+- **Deployment:** Vercel
 
 ## Project Structure
 
 ```
 app/
   (auth)/
-    login/page.tsx       # Login page
-    signup/page.tsx      # Signup page
+    login/page.tsx       # Login page with Clerk
+    signup/page.tsx      # Signup page with Clerk
   dashboard/
     page.tsx             # Dashboard list
     [id]/
       page.tsx           # View dashboard
       edit/page.tsx      # Edit dashboard
   explore/page.tsx       # Public dashboards
-  api/data/
-    [source]/route.ts    # Data API routes
+  api/
+    dashboards/          # Dashboard CRUD API
+    widgets/             # Widget CRUD API
+    data/[source]/       # Data source proxies
 components/
   charts/                # Chart components
     LineChart.tsx
@@ -77,7 +80,10 @@ components/
   layout/                # Layout components
     Navbar.tsx
 lib/
-  firebase.ts            # Firebase config
+  db/                    # Database layer
+    schema.sql           # PostgreSQL schema
+    index.ts             # Database operations
+  auth.ts                # Clerk user sync
   hooks/                 # Custom hooks
     useAuth.ts
     useDashboards.ts
@@ -87,6 +93,7 @@ lib/
     fred.ts
     coingecko.ts
     index.ts
+middleware.ts            # Clerk route protection
 types/
   index.ts               # TypeScript types
 ```
@@ -96,34 +103,58 @@ types/
 ### 1. Clone and Install
 
 ```bash
-cd datalens/my-app
+git clone https://github.com/LearningEverythingFirstTIme/public-data-viz.git
+cd public-data-viz
 npm install
 ```
 
-### 2. Configure Firebase
+### 2. Configure Environment Variables
 
-Create a `.env.local` file with your Firebase credentials:
+Create a `.env.local` file:
 
 ```env
-NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+# Database (Vercel Postgres)
+POSTGRES_URL=your_postgres_url
+POSTGRES_PRISMA_URL=your_prisma_url
+POSTGRES_URL_NON_POOLING=your_non_pooling_url
+POSTGRES_USER=your_user
+POSTGRES_HOST=your_host
+POSTGRES_PASSWORD=your_password
+POSTGRES_DATABASE=your_database
+
+# Auth (Clerk)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/signup
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
 
 # Optional: FRED API Key for US economic data
 FRED_API_KEY=your_fred_api_key
 ```
 
-To get Firebase credentials:
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project
-3. Enable Authentication (Email/Password and Google)
-4. Create a Firestore database
-5. Get your web app configuration from Project Settings
+### 3. Set Up Database
 
-### 3. Run Development Server
+1. Create a Vercel Postgres database in your Vercel dashboard
+2. Copy the environment variables to `.env.local`
+3. Run the schema:
+
+```bash
+psql $POSTGRES_URL -f lib/db/schema.sql
+```
+
+Or manually execute the SQL in `lib/db/schema.sql` in your database console.
+
+### 4. Set Up Clerk
+
+1. Go to [Clerk Dashboard](https://dashboard.clerk.com/)
+2. Create a new application
+3. Enable Google OAuth and Email/Password
+4. Copy your Publishable Key and Secret Key to `.env.local`
+5. Add your domain to allowed origins
+
+### 5. Run Development Server
 
 ```bash
 npm run dev
@@ -131,13 +162,13 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-### 4. Build for Production
+### 6. Build for Production
 
 ```bash
 npm run build
 ```
 
-### 5. Deploy to Vercel
+### 7. Deploy to Vercel
 
 ```bash
 npm install -g vercel
@@ -181,19 +212,45 @@ Cryptocurrency market data.
 - Polkadot (DOT)
 - Chainlink (LINK)
 
-## Firestore Database Schema
+## Database Schema
 
+### Users Table
+```sql
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  name TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
 ```
-dashboards/
-  {dashboardId}/
-    userId: string
-    name: string
-    description: string
-    isPublic: boolean
-    widgets: WidgetConfig[]
-    layout: WidgetLayout[]
-    createdAt: timestamp
-    updatedAt: timestamp
+
+### Dashboards Table
+```sql
+CREATE TABLE dashboards (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  is_public BOOLEAN DEFAULT FALSE,
+  layout_json JSONB,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### Widgets Table
+```sql
+CREATE TABLE widgets (
+  id TEXT PRIMARY KEY,
+  dashboard_id TEXT REFERENCES dashboards(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  title TEXT,
+  data_source TEXT NOT NULL,
+  params_json JSONB,
+  chart_config_json JSONB,
+  position_json JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
 ```
 
 ## License
