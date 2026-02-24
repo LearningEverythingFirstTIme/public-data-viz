@@ -26,6 +26,7 @@ export interface WidgetConfig {
     indicator?: string;
     country?: string;
     symbol?: string;
+    days?: string;
     startDate?: string;
     endDate?: string;
     frequency?: string;

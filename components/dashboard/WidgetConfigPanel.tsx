@@ -336,7 +336,7 @@ export function WidgetConfigPanel({
                     setConfig((prev) => ({
                       ...prev,
                       chartConfig: {
-                        ...prev.chartConfig,
+                        ...prev.chartConfig!,
                         showGrid: checked,
                       },
                     }))
@@ -354,7 +354,7 @@ export function WidgetConfigPanel({
                         setConfig((prev) => ({
                           ...prev,
                           chartConfig: {
-                            ...prev.chartConfig,
+                            ...prev.chartConfig!,
                             lineSmooth: checked,
                           },
                         }))
@@ -371,7 +371,7 @@ export function WidgetConfigPanel({
                           setConfig((prev) => ({
                             ...prev,
                             chartConfig: {
-                              ...prev.chartConfig,
+                              ...prev.chartConfig!,
                               fillArea: checked,
                             },
                           }))

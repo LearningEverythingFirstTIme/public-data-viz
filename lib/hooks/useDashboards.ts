@@ -172,6 +172,31 @@ export function useDashboard(dashboardId: string) {
     }
   }, [dashboardId]);
 
+  const updateDashboard = useCallback(async (updates: Partial<Dashboard>) => {
+    if (!dashboardId) return;
+    
+    try {
+      const response = await fetch(`/api/dashboards/${dashboardId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update dashboard');
+      }
+      
+      // Refresh dashboard data
+      const refreshResponse = await fetch(`/api/dashboards/${dashboardId}`);
+      if (refreshResponse.ok) {
+        const refreshedData = await refreshResponse.json();
+        setDashboard(refreshedData);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    }
+  }, [dashboardId]);
+
   const refetch = useCallback(async () => {
     if (!dashboardId) return;
     
@@ -194,6 +219,7 @@ export function useDashboard(dashboardId: string) {
     loading,
     error,
     updateWidgets,
+    updateDashboard,
     refetch,
   };
 }

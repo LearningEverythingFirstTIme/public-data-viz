@@ -78,8 +78,8 @@ export function AreaChartComponent({
             borderRadius: '8px',
             color: '#F9FAFB',
           }}
-          formatter={(value: number) => [
-            `${formatValue(value)} ${data.metadata?.unit || ''}`,
+          formatter={(value: number | undefined) => [
+            `${formatValue(value || 0)} ${data.metadata?.unit || ''}`,
             data.name,
           ]}
           labelStyle={{ color: '#6B7280' }}

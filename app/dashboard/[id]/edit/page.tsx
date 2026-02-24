@@ -31,7 +31,7 @@ interface DashboardEditPageProps {
 function DashboardEditContent({ id }: { id: string }) {
   const router = useRouter();
   const { user, isLoaded } = useUser();
-  const { dashboard, loading, updateWidgets } = useDashboard(id);
+  const { dashboard, loading, updateWidgets, updateDashboard } = useDashboard(id);
   
   const [widgets, setWidgets] = useState<WidgetConfig[]>([]);
   const [layout, setLayout] = useState<WidgetLayout[]>([]);
@@ -248,7 +248,7 @@ function DashboardEditContent({ id }: { id: string }) {
               <Switch
                 checked={dashboard.isPublic}
                 onCheckedChange={(checked) => {
-                  // Update dashboard visibility
+                  updateDashboard({ isPublic: checked });
                 }}
               />
             </div>

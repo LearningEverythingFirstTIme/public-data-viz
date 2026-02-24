@@ -84,11 +84,11 @@ export function ScatterChartComponent({
             borderRadius: '8px',
             color: '#F9FAFB',
           }}
-          formatter={(value: number, name: string, props: any) => {
+          formatter={(value: number | undefined, name: string | undefined, props: any) => {
             if (name === 'y') {
-              return [`${formatValue(value)} ${data.metadata?.unit || ''}`, data.name];
+              return [`${formatValue(value || 0)} ${data.metadata?.unit || ''}`, data.name];
             }
-            return [value, name];
+            return [value || 0, name || ''];
           }}
           labelFormatter={(label: any, payload: any) => {
             if (payload && payload[0]) {

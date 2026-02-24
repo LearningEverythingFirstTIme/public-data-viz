@@ -1,6 +1,20 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { updateWidget, deleteWidget, getDashboardById } from '@/lib/db';
+import { sql } from '@vercel/postgres';
+
+// Helper function to check if user owns the widget's dashboard
+async function checkWidgetOwnership(widgetId: string, userId: string): Promise<boolean> {
+  const result = await sql`
+    SELECT d.user_id
+    FROM widgets w
+    JOIN dashboards d ON w.dashboard_id = d.id
+    WHERE w.id = ${widgetId}
+  `;
+  
+  if (result.rows.length === 0) return false;
+  return result.rows[0].user_id === userId;
+}
 
 export async function PUT(
   request: Request,
@@ -14,10 +28,11 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    // Get the widget's dashboard to check ownership
-    // Note: This requires a DB query to get dashboard_id from widget
-    // For now, we'll rely on the frontend to handle this properly
-    // A more robust solution would join with dashboards table
+    // Check ownership before allowing update
+    const isOwner = await checkWidgetOwnership(id, userId);
+    if (!isOwner) {
+      return NextResponse.json({ error: 'Forbidden - you do not own this widget' }, { status: 403 });
+    }
     
     const body = await request.json();
     const { widget } = body;
@@ -50,6 +65,12 @@ export async function DELETE(
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    // Check ownership before allowing delete
+    const isOwner = await checkWidgetOwnership(id, userId);
+    if (!isOwner) {
+      return NextResponse.json({ error: 'Forbidden - you do not own this widget' }, { status: 403 });
     }
     
     await deleteWidget(id);
