@@ -239,14 +239,15 @@ export async function updateDashboardWidgets(
     // Delete existing widgets
     await sql`DELETE FROM widgets WHERE dashboard_id = ${dashboardId}`;
     
-    // Insert new widgets
+    // Insert new widgets with their IDs preserved
     for (const widget of widgets) {
       await sql`
         INSERT INTO widgets (
-          dashboard_id, type, title, data_source, 
+          id, dashboard_id, type, title, data_source, 
           params_json, chart_config_json
         )
         VALUES (
+          ${widget.id}::uuid,
           ${dashboardId}, 
           ${widget.type}, 
           ${widget.title}, 

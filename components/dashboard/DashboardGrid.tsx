@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { WidgetFrame } from './WidgetFrame';
 import { WidgetConfig, WidgetLayout } from '@/types';
@@ -26,7 +26,11 @@ export function DashboardGrid({
   onEditWidget,
   onDeleteWidget,
 }: DashboardGridProps) {
+  // Sync internal state when layout prop changes (e.g., after loading from DB)
   const [currentLayout, setCurrentLayout] = useState<WidgetLayout[]>(layout);
+  useEffect(() => {
+    setCurrentLayout(layout);
+  }, [layout]);
 
   const handleLayoutChange = useCallback(
     (newLayout: any[]) => {
@@ -45,9 +49,11 @@ export function DashboardGrid({
     [onLayoutChange]
   );
 
+  // Build layouts from currentLayout state, not the prop
+  // This ensures react-grid-layout gets the correct positions after reload
   const defaultLayouts = {
     lg: widgets.map((widget) => {
-      const existingLayout = layout.find((l) => l.i === widget.id);
+      const existingLayout = currentLayout.find((l) => l.i === widget.id);
       return {
         i: widget.id,
         x: existingLayout?.x ?? 0,
