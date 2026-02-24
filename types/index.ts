@@ -8,10 +8,12 @@ export interface DataSet {
   id: string;
   name: string;
   data: DataPoint[];
+  ohlcvData?: OHLCVDataPoint[];
   metadata?: {
     unit?: string;
     source?: string;
     lastUpdated?: Date;
+    isOHLCV?: boolean;
   };
 }
 

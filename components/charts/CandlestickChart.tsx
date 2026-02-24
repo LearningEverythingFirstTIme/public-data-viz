@@ -25,8 +25,23 @@ interface CandlestickChartProps {
  * Validates if the data is in OHLCV format (Open, High, Low, Close, Volume)
  * Returns true if all required fields are present in the data points
  */
-export function supportsDataType(data: DataSet): data is DataSet & { data: OHLCVDataPoint[] } {
-  if (!data || !Array.isArray(data.data) || data.data.length === 0) {
+export function supportsDataType(data: DataSet): boolean {
+  if (!data) {
+    return false;
+  }
+
+  // Check for ohlcvData field (preferred format from Alpha Vantage)
+  if (data.ohlcvData && Array.isArray(data.ohlcvData) && data.ohlcvData.length > 0) {
+    const firstPoint = data.ohlcvData[0];
+    const requiredFields = ['open', 'high', 'low', 'close', 'volume'];
+    const hasAllFields = requiredFields.every(
+      (field) => typeof firstPoint[field as keyof OHLCVDataPoint] === 'number'
+    );
+    return hasAllFields;
+  }
+
+  // Check data.data array for OHLCV format
+  if (!Array.isArray(data.data) || data.data.length === 0) {
     return false;
   }
 
@@ -180,8 +195,8 @@ export function CandlestickChartComponent({
       return { chartData: [], priceRange: { min: 0, max: 100 }, maxVolume: 0 };
     }
 
-    // Cast data to OHLCVDataPoint[] since we've validated it
-    const ohlcvData = data.data as unknown as OHLCVDataPoint[];
+    // Use ohlcvData if available (from Alpha Vantage), otherwise fall back to data.data
+    const ohlcvData = data.ohlcvData || (data.data as unknown as OHLCVDataPoint[]);
 
     const processed = ohlcvData.map((point) => ({
       ...point,

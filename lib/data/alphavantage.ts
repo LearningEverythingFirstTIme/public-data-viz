@@ -1,5 +1,5 @@
 import { DataConnector } from './connectors';
-import { DataSet, DataPoint, DataSourceIndicator } from '@/types';
+import { DataSet, DataPoint, DataSourceIndicator, OHLCVDataPoint } from '@/types';
 
 export class AlphaVantageConnector extends DataConnector {
   id = 'alphavantage';
@@ -84,6 +84,7 @@ export class AlphaVantageConnector extends DataConnector {
     const indicatorInfo = this.getIndicators().find(i => i.id === indicator);
     
     let dataPoints: DataPoint[] = [];
+    let ohlcvData: OHLCVDataPoint[] | undefined;
 
     if (indicator === 'TIME_SERIES_DAILY' || indicator === 'TIME_SERIES_INTRADAY') {
       // OHLCV data format
@@ -93,13 +94,24 @@ export class AlphaVantageConnector extends DataConnector {
       
       const timeSeries = apiData[timeSeriesKey] || {};
       
-      dataPoints = Object.entries(timeSeries)
+      // Create OHLCV data for candlestick charts
+      ohlcvData = Object.entries(timeSeries)
         .map(([date, values]: [string, any]) => ({
-          x: date,
-          y: parseFloat(values['4. close']),
-          label: `O: ${values['1. open']} H: ${values['2. high']} L: ${values['3. low']} V: ${values['5. volume']}`,
+          date,
+          open: parseFloat(values['1. open']),
+          high: parseFloat(values['2. high']),
+          low: parseFloat(values['3. low']),
+          close: parseFloat(values['4. close']),
+          volume: parseInt(values['5. volume'], 10),
         }))
-        .sort((a, b) => new Date(a.x as string).getTime() - new Date(b.x as string).getTime());
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      // Also create standard DataPoint for other chart types
+      dataPoints = ohlcvData.map(d => ({
+        x: d.date,
+        y: d.close,
+        label: `O: ${d.open} H: ${d.high} L: ${d.low} V: ${d.volume}`,
+      }));
     } else {
       // Technical indicator format - find the data key (usually like "Technical Analysis: RSI")
       const dataKey = Object.keys(apiData).find(key => key.includes('Technical Analysis'));
@@ -123,10 +135,12 @@ export class AlphaVantageConnector extends DataConnector {
       id: `alphavantage-${indicator}-${symbol}`,
       name: `${indicatorInfo?.name || indicator} - ${symbol}`,
       data: dataPoints,
+      ohlcvData, // Include OHLCV data when available
       metadata: {
         unit: indicatorInfo?.unit,
         source: 'Alpha Vantage',
         lastUpdated: new Date(),
+        isOHLCV: !!ohlcvData,
       },
     };
   }
